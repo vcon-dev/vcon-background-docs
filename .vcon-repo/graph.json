@@ -1,0 +1,360 @@
+{
+  "schema_version": "1.0.0",
+  "repo": "vcon-background-docs",
+  "repo_version": null,
+  "archetype": "ietf-draft",
+  "generated_at": "2026-04-16T15:15:45.508714+00:00",
+  "stats": {
+    "node_count": 52,
+    "edge_count": 0
+  },
+  "nodes": [
+    {
+      "id": "document:draft",
+      "type": "document",
+      "name": "draft-rosenberg-ai-protocols-00",
+      "file": "draft-rosenberg-ai-protocols-00.txt"
+    },
+    {
+      "id": "section:introduction",
+      "type": "section",
+      "name": "1. Introduction",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 117
+    },
+    {
+      "id": "section:the-framework",
+      "type": "section",
+      "name": "2. The Framework",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 234
+    },
+    {
+      "id": "section:ai-agent-to-user",
+      "type": "section",
+      "name": "2.1. AI Agent to User",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 292
+    },
+    {
+      "id": "section:user-initiated",
+      "type": "section",
+      "name": "2.1.1. User Initiated",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 298
+    },
+    {
+      "id": "section:ai-agent-initiated",
+      "type": "section",
+      "name": "2.1.2. AI Agent Initiated",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 341
+    },
+    {
+      "id": "section:ai-agent-to-api",
+      "type": "section",
+      "name": "2.2. AI Agent to API",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 374
+    },
+    {
+      "id": "section:ai-agent-to-ai-agent",
+      "type": "section",
+      "name": "2.3. AI Agent to AI Agent",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 421
+    },
+    {
+      "id": "section:protocol-requirements-and-considerations",
+      "type": "section",
+      "name": "3. Protocol Requirements and Considerations",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 565
+    },
+    {
+      "id": "section:user-to-ai-agent",
+      "type": "section",
+      "name": "3.1. User to AI Agent",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 571
+    },
+    {
+      "id": "section:authentication",
+      "type": "section",
+      "name": "3.1.1. Authentication",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 578
+    },
+    {
+      "id": "section:ai-agent-to-api",
+      "type": "section",
+      "name": "3.2. AI Agent to API",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 621
+    },
+    {
+      "id": "section:discovery",
+      "type": "section",
+      "name": "3.2.1. Discovery",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 635
+    },
+    {
+      "id": "section:authn-and-authz-on-apis",
+      "type": "section",
+      "name": "3.2.2. AuthN and AuthZ on APIs",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 652
+    },
+    {
+      "id": "section:intra-domain-service-to-service",
+      "type": "section",
+      "name": "3.2.2.1. Intra-Domain Service to Service",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 657
+    },
+    {
+      "id": "section:intra-domain-obo",
+      "type": "section",
+      "name": "3.2.2.2. Intra-Domain OBO",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 687
+    },
+    {
+      "id": "section:inter-domain-oauth",
+      "type": "section",
+      "name": "3.2.2.3. Inter-Domain OAuth",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 767
+    },
+    {
+      "id": "section:user-confirmation",
+      "type": "section",
+      "name": "3.2.3. User Confirmation",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 825
+    },
+    {
+      "id": "section:api-customization-for-ai-agents",
+      "type": "section",
+      "name": "3.2.4. API Customization for AI Agents",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 864
+    },
+    {
+      "id": "section:ai-agent-to-ai-agent",
+      "type": "section",
+      "name": "3.3. AI Agent to AI Agent",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 889
+    },
+    {
+      "id": "section:discovery",
+      "type": "section",
+      "name": "3.3.1. Discovery",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 901
+    },
+    {
+      "id": "section:routing-and-connection",
+      "type": "section",
+      "name": "3.3.2. Routing and Connection",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 920
+    },
+    {
+      "id": "section:lifecycle-management",
+      "type": "section",
+      "name": "3.3.3. Lifecycle Management",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 966
+    },
+    {
+      "id": "section:data-transferrance",
+      "type": "section",
+      "name": "3.3.4. Data Transferrance",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 1086
+    },
+    {
+      "id": "section:context-transfer",
+      "type": "section",
+      "name": "3.3.4.1. Context Transfer",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 1095
+    },
+    {
+      "id": "section:mid-session-data-transfer",
+      "type": "section",
+      "name": "3.3.4.2. Mid-Session Data Transfer",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 1139
+    },
+    {
+      "id": "section:authentication-and-authorization",
+      "type": "section",
+      "name": "3.3.5. Authentication and Authorization",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 1181
+    },
+    {
+      "id": "section:user-confirmation",
+      "type": "section",
+      "name": "3.3.6. User Confirmation",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 1244
+    },
+    {
+      "id": "section:prompt-injection-attacks",
+      "type": "section",
+      "name": "3.3.7. Prompt Injection Attacks",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 1259
+    },
+    {
+      "id": "section:analysis-of-existing-protocols",
+      "type": "section",
+      "name": "4. Analysis of Existing Protocols",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 1276
+    },
+    {
+      "id": "section:mcp",
+      "type": "section",
+      "name": "4.1. MCP",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 1293
+    },
+    {
+      "id": "section:a2a",
+      "type": "section",
+      "name": "4.2. A2A",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 1321
+    },
+    {
+      "id": "section:agntcy",
+      "type": "section",
+      "name": "4.3. Agntcy",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 1359
+    },
+    {
+      "id": "section:conclusions",
+      "type": "section",
+      "name": "5. Conclusions",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 1387
+    },
+    {
+      "id": "section:informative-references",
+      "type": "section",
+      "name": "6. Informative References",
+      "file": "draft-rosenberg-ai-protocols-00.txt",
+      "line": 1405
+    },
+    {
+      "id": "reference:rfc9293",
+      "type": "reference",
+      "name": "RFC 9293",
+      "url": "https://www.rfc-editor.org/rfc/rfc9293"
+    },
+    {
+      "id": "reference:rfc9000",
+      "type": "reference",
+      "name": "RFC 9000",
+      "url": "https://www.rfc-editor.org/rfc/rfc9000"
+    },
+    {
+      "id": "reference:rfc9114",
+      "type": "reference",
+      "name": "RFC 9114",
+      "url": "https://www.rfc-editor.org/rfc/rfc9114"
+    },
+    {
+      "id": "reference:rfc3261",
+      "type": "reference",
+      "name": "RFC 3261",
+      "url": "https://www.rfc-editor.org/rfc/rfc3261"
+    },
+    {
+      "id": "reference:rfc3550",
+      "type": "reference",
+      "name": "RFC 3550",
+      "url": "https://www.rfc-editor.org/rfc/rfc3550"
+    },
+    {
+      "id": "reference:rfc0768",
+      "type": "reference",
+      "name": "RFC 0768",
+      "url": "https://www.rfc-editor.org/rfc/rfc0768"
+    },
+    {
+      "id": "reference:rfc0791",
+      "type": "reference",
+      "name": "RFC 0791",
+      "url": "https://www.rfc-editor.org/rfc/rfc0791"
+    },
+    {
+      "id": "reference:draft-rosenberg-ai-protocols-00",
+      "type": "reference",
+      "name": "draft-rosenberg-ai-protocols-00"
+    },
+    {
+      "id": "document:HOW_TO_CREATE_EXTERNAL_LINK",
+      "type": "document",
+      "name": "HOW_TO_CREATE_EXTERNAL_LINK",
+      "file": "HOW_TO_CREATE_EXTERNAL_LINK.md"
+    },
+    {
+      "id": "document:conserver_config_guide",
+      "type": "document",
+      "name": "conserver_config_guide",
+      "file": "conserver_config_guide.md"
+    },
+    {
+      "id": "document:vcon_adapter_guide",
+      "type": "document",
+      "name": "vcon_adapter_guide",
+      "file": "vcon_adapter_guide.md"
+    },
+    {
+      "id": "document:HOW_TO_CREATE_LINKS",
+      "type": "document",
+      "name": "HOW_TO_CREATE_LINKS",
+      "file": "HOW_TO_CREATE_LINKS.md"
+    },
+    {
+      "id": "document:vcon_quickstart_guide",
+      "type": "document",
+      "name": "vcon_quickstart_guide",
+      "file": "vcon_quickstart_guide.md"
+    },
+    {
+      "id": "document:conserver-quick-start",
+      "type": "document",
+      "name": "conserver-quick-start",
+      "file": "conserver-quick-start.md"
+    },
+    {
+      "id": "document:LLM_GUIDE",
+      "type": "document",
+      "name": "LLM_GUIDE",
+      "file": "LLM_GUIDE.md"
+    },
+    {
+      "id": "document:CLAUDE",
+      "type": "document",
+      "name": "CLAUDE",
+      "file": "CLAUDE.md"
+    },
+    {
+      "id": "document:readme",
+      "type": "document",
+      "name": "README",
+      "file": "README.md"
+    }
+  ],
+  "edges": [],
+  "subsystems": []
+}

@@ -1,128 +1,723 @@
 # vCon Library (vcon-lib)
 
-> Source: https://github.com/vcon-dev/vcon-lib
+> Source: https://github.com/vcon-dev/vcon-lib (copy of README.md at vcon 1.0.2)
 
-A comprehensive Python implementation for managing virtual conversation objects (vCons).
+
+A Python library for working with vCon (Virtual Conversation) objects according to the vCon specification, currently [`draft-ietf-vcon-vcon-core-05`](https://datatracker.ietf.org/doc/draft-ietf-vcon-vcon-core/) (syntax `"0.5.0"`).
+
+[Documentation](https://www.conserver.io/vcon-library) · [API docs](https://vcon-dev.github.io/vcon-lib/) · [Changelog](https://github.com/vcon-dev/vcon-lib/blob/main/CHANGELOG.md) · [Migration guide](https://github.com/vcon-dev/vcon-lib/blob/main/MIGRATION_GUIDE.md) · [Source](https://github.com/vcon-dev/vcon-lib)
+
+```bash
+pip install vcon
+```
+
+Requires Python 3.12 or later. Version 1.0 writes vCon syntax `"0.5.0"` and reads both `"0.4.0"` and `"0.5.0"`; a 0.4.0 vCon is migrated to 0.5.0 when it is loaded. 1.0 is a breaking release: read the [migration guide](https://github.com/vcon-dev/vcon-lib/blob/main/MIGRATION_GUIDE.md) before upgrading from 0.10 or earlier.
 
 ## Overview
 
-The vCon Library provides a complete implementation of the vCon format for representing conversations and related metadata. This library implements the latest vCon specification with validation capabilities.
+The vCon library provides a complete implementation of the vCon format for representing conversations and related metadata. It supports all features defined in the latest vCon specification including:
 
-## Core Capabilities
-
-### Conversation Management
-- **Parties**: Manage conversation participants
-- **Dialogs**: Handle conversation content (text, audio, video)
-- **Attachments**: Add supplementary files and data
-- **Analysis**: Store processing results (transcriptions, sentiment, summaries)
-
-### Contact Methods Supported
-- Telephone (tel:)
-- Email (mailto:)
-- SIP addresses
-- Decentralized Identifiers (DID)
-
-### Media Formats
-- Audio
-- Video
-- Text
-- Images
-
-## Security and Privacy Features
-
-### Digital Security
-- Digital signatures for authenticity
-- Content hashing for integrity verification
-
-### Privacy Compliance
-- **Lawful Basis Extension**: GDPR compliance support
-- **WTF Extension**: World Transcription Format for standardized transcription
-
-## Installation
-
-```bash
-pip install vcon-lib
-```
+- **Conversation Management**: Parties, dialogs, attachments, and analysis
+- **Contact Information**: Multiple contact methods (tel, email, SIP, DID)
+- **Media Support**: Recordings (audio and video), text, and images
+- **Security**: Digital signatures and content hashing
+- **Extensibility**: Extensions and critical fields
+- **Location Data**: Civic address information (GEOPRIV)
+- **Sessions and Events**: `sessions` group dialog by conversation, `events` record joins, drops, holds, key presses and call transfers
+- **Migration**: `migrate_0_4_0_to_0_5_0()` upgrades 0.4.0 vCons, with a report of everything it inferred
+- **Privacy Compliance**: Lawful Basis extension for GDPR compliance
+- **Transcription Support**: WTF (World Transcription Format) extension for standardized speech-to-text
 
 ## Quick Start
 
+### Basic vCon Creation
 ```python
 from vcon import Vcon
 from vcon.party import Party
 from vcon.dialog import Dialog
+from vcon.session import Session
 from datetime import datetime, timezone
 
 # Create a new vCon
 vcon = Vcon.build_new()
 
 # Add parties
-vcon.add_party(Party(
-    tel="+1234567890",
-    name="Alice",
-    role="caller"
-))
-vcon.add_party(Party(
-    tel="+0987654321",
-    name="Bob",
-    role="callee"
-))
+caller = Party(tel="+1234567890", name="Alice", role="caller")
+agent = Party(tel="+1987654321", name="Bob", role="agent")
+vcon.add_party(caller)
+vcon.add_party(agent)
 
-# Add a text dialog
-vcon.add_dialog(Dialog(
+# A Session groups the dialog of one conversation. Its parties are the
+# receivers; each Dialog's parties are only the contributors.
+vcon.add_session(Session(start=datetime.now(timezone.utc), parties=[0, 1]))
+
+# Add dialog (to Session 0)
+dialog = Dialog(
     type="text",
-    start=datetime.now(timezone.utc).isoformat(),
-    parties=[0, 1],
-    originator=0,
-    mimetype="text/plain",
-    body="Hello, how can I help you today?"
-))
-
-# Add metadata
-vcon.add_tag("customer_id", "12345")
-
-# Validate the vCon
-is_valid, errors = vcon.is_valid()
+    start=datetime.now(timezone.utc),
+    parties=[0],
+    body="Hello, I need help with my account.",
+    encoding="none",
+    mediatype="text/plain",
+)
+vcon.add_dialog(dialog, session=0)
 
 # Save to file
-vcon.save_to_file("conversation.json")
+vcon.save_to_file("conversation.vcon.json")
+print(f"Created vCon: {vcon.uuid}")  # syntax "0.5.0"
+```
 
-# Load from file or URL
-loaded_vcon = Vcon.load_from_file("conversation.json")
+### Loading a 0.4.0 vCon
+```python
+# Readers accept 0.4.0 and 0.5.0. A document that declares "vcon": "0.4.0"
+# is migrated to 0.5.0 on load; the report lists every inferred value.
+vcon = Vcon.load("old.vcon.json")
+print(vcon.migration_report.summary())   # "3 inferred, 0 fallback, 1 unresolved"
+
+# Or migrate explicitly (strict=True raises MigrationError instead of using a fallback)
+from vcon import migrate_0_4_0_to_0_5_0
+new_dict, report = migrate_0_4_0_to_0_5_0(old_dict, strict=False)
+```
+
+### Privacy Compliance with Lawful Basis Extension
+```python
+from datetime import timedelta
+
+# Add lawful basis for consent
+vcon.add_lawful_basis_attachment(
+    lawful_basis="consent",
+    expiration=(datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
+    purpose_grants=[
+        {
+            "purpose": "recording",
+            "granted": True,
+            "granted_at": datetime.now(timezone.utc).isoformat()
+        },
+        {
+            "purpose": "transcription",
+            "granted": True,
+            "granted_at": datetime.now(timezone.utc).isoformat()
+        }
+    ],
+    party_index=0
+)
+
+# Check permissions
+can_record = vcon.check_lawful_basis_permission("recording", party_index=0)
+print(f"Can record: {can_record}")
+```
+
+### Transcription with WTF Extension
+```python
+# Add transcription
+vcon.add_wtf_transcription_attachment(
+    transcript={
+        "text": "Hello, I need help with my account.",
+        "language": "en",
+        "duration": 4.2,
+        "confidence": 0.92
+    },
+    segments=[
+        {
+            "id": 0,
+            "start": 0.0,
+            "end": 4.2,
+            "text": "Hello, I need help with my account.",
+            "confidence": 0.92,
+            "speaker": 0
+        }
+    ],
+    metadata={
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "processed_at": datetime.now(timezone.utc).isoformat(),
+        "provider": "whisper",
+        "model": "whisper-1"
+    },
+    party_index=0,
+    dialog_index=0
+)
+
+# Export to SRT format
+attachments = vcon.find_wtf_attachments(party_index=0)
+if attachments:
+    from vcon.extensions.wtf import WTFAttachment
+    wtf_attachment = WTFAttachment.from_dict(attachments[0]["body"])
+    srt_content = wtf_attachment.export_to_srt()
+    print("SRT Export:")
+    print(srt_content)
+```
+
+### Complete Example with Extensions
+```python
+# Create comprehensive vCon with extensions
+vcon = Vcon.build_new()
+
+# Add parties
+caller = Party(tel="+1234567890", name="Alice", role="caller")
+agent = Party(tel="+1987654321", name="Bob", role="agent")
+vcon.add_party(caller)
+vcon.add_party(agent)
+
+# One Session for the call, then the recording dialog in it
+vcon.add_session(Session(start=datetime.now(timezone.utc), parties=[0, 1]))
+dialog = Dialog(
+    type="recording",
+    start=datetime.now(timezone.utc),
+    parties=[0, 1],
+    mediatype="audio/mp3"
+)
+vcon.add_dialog(dialog, session=0)
+
+# Add lawful basis for consent
+vcon.add_lawful_basis_attachment(
+    lawful_basis="consent",
+    expiration=(datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
+    purpose_grants=[
+        {
+            "purpose": "recording",
+            "granted": True,
+            "granted_at": datetime.now(timezone.utc).isoformat()
+        },
+        {
+            "purpose": "transcription",
+            "granted": True,
+            "granted_at": datetime.now(timezone.utc).isoformat()
+        }
+    ],
+    party_index=0
+)
+
+# Add transcription
+vcon.add_wtf_transcription_attachment(
+    transcript={
+        "text": "Hello, I need help with my account.",
+        "language": "en",
+        "duration": 4.2,
+        "confidence": 0.92
+    },
+    segments=[
+        {
+            "id": 0,
+            "start": 0.0,
+            "end": 4.2,
+            "text": "Hello, I need help with my account.",
+            "confidence": 0.92,
+            "speaker": 0
+        }
+    ],
+    metadata={
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "processed_at": datetime.now(timezone.utc).isoformat(),
+        "provider": "whisper",
+        "model": "whisper-1"
+    },
+    party_index=0,
+    dialog_index=0
+)
+
+# Add extensions
+vcon.add_extension("lawful_basis")
+vcon.add_extension("wtf_transcription")
+
+# Validate extensions
+validation_results = vcon.validate_extensions()
+print("Extension validation:", validation_results)
+
+# Save vCon
+vcon.save_to_file("complete_conversation.vcon.json")
+print(f"Created complete vCon with extensions: {vcon.uuid}")
 ```
 
 ## Key Features
 
-### Extension Framework
-- Validation system
-- Processing plugins
-- Granular permission management
+This library implements the latest vCon specification with the following features:
 
-### Export Capabilities
-- SRT subtitle format
-- WebVTT format
-- JSON export
+### Enhanced Party Information
+```python
+from vcon import Vcon
+from vcon.party import Party
 
-### Transcription Converters
-Convert provider-specific transcription data from:
-- OpenAI Whisper
-- Deepgram
-- Other transcription services
+# Create a party with enhanced contact information
+party = Party(
+    tel="+1234567890",
+    name="John Doe",
+    sip="sip:john@example.com",
+    did="did:example:123456789abcdef",
+    jCard={
+        "fn": "John Doe",
+        "tel": "+1234567890",
+        "email": "john@example.com"
+    },
+    timezone="America/New_York"
+)
+```
 
-## Validation and Testing
+### Extensions and Must-Support
+```python
+vcon = Vcon.build_new()
 
-The package includes comprehensive test coverage for:
-- Core functionality
-- Validation rules
-- Media format support
+# Add extensions used in this vCon
+vcon.add_extension("video")
+vcon.add_extension("encryption")
+
+# Add extensions that must be supported
+vcon.add_critical("encryption")
+
+print(vcon.get_extensions())  # ['video', 'encryption']
+print(vcon.get_critical())  # ['encryption']
+```
+
+### Enhanced Dialog Support
+```python
+from vcon.dialog import Dialog
+from datetime import datetime
+
+# Create dialog with new fields
+dialog = Dialog(
+    type="text",
+    start=datetime.now(),
+    parties=[0, 1],
+    session_id={"local": "local-uuid", "remote": "remote-uuid"},
+    # "<algorithm>-<unpadded base64url digest>"; vcon.compute_content_hash(data) makes one
+    content_hash="sha512-xbxzWUN7HoME4TkKebyfothmuRRH1M_Skvg2tfVxlFDWSQOdsLcKZ60qsibswilp_NsnfnBW3-7ctRSQGT9UVg",
+    application="chat-app",
+    message_id="<message-id@example.com>"
+)
+```
+
+### Events (replacing party history)
+```python
+from vcon.event import Event
+from datetime import datetime, timezone
+
+now = datetime.now(timezone.utc)
+# Events apply to the Sessions listed in `sessions`.
+vcon.add_event(Event(type="join", time=now, sessions=0, party=0))
+vcon.add_event(Event(type="hold", time=now, sessions=0, party=0))
+vcon.add_event(Event(type="keydown", time=now, sessions=0, party=1, button="5"))
+
+# A blind transfer: `sessions` is the original call, `target_session` the call to the target
+vcon.add_event(Event(type="blind-transfer", time=now, sessions=0, party=1,
+                     transferee=0, transfer_target=2, target_session=1))
+```
+Each type has a parameter table (core-05 section 4.3.1.5) that `Event` and
+`Vcon.is_valid()` enforce: required (M), optional (O), should not (SN, a warning)
+and must not (X).
+
+### Sessions
+```python
+from vcon.session import Session, SessionReference
+
+vcon.add_session(Session(
+    start=now, duration=300, parties=[0, 1],   # parties are the receivers
+    originator=1,                              # only when not the first party
+    sessions=[SessionReference(1, "child")],   # child, peer, precursor, breakout
+))
+vcon.add_session()   # an empty placeholder Session is allowed
+```
+
+### Disposition Values for Incomplete Dialogs
+```python
+# Create incomplete dialog with proper disposition
+incomplete_dialog = Dialog(
+    type="incomplete",
+    start=datetime.now(),
+    parties=[0],
+    disposition="no-answer"  # Valid: no-answer, congestion, failed, busy, hung-up, voicemail-no-message
+)
+```
+
+### Civic Address Support
+```python
+from vcon.civic_address import CivicAddress
+
+# Create civic address with GEOPRIV fields
+address = CivicAddress(
+    country="US",
+    a1="CA",
+    a3="San Francisco",
+    sts="Market Street",
+    hno="123",
+    pc="94102"
+)
+
+party = Party(name="Jane", civicaddress=address)
+```
+
+### Lawful Basis Extension (Privacy Compliance)
+```python
+from datetime import datetime, timezone, timedelta
+
+# Add lawful basis for GDPR compliance
+vcon.add_lawful_basis_attachment(
+    lawful_basis="consent",
+    expiration=(datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
+    purpose_grants=[
+        {
+            "purpose": "recording",
+            "granted": True,
+            "granted_at": datetime.now(timezone.utc).isoformat()
+        },
+        {
+            "purpose": "analysis",
+            "granted": True,
+            "granted_at": datetime.now(timezone.utc).isoformat(),
+            "conditions": ["anonymized_data_only"]
+        }
+    ],
+    party_index=0,
+    session_index=0   # an attachment needs a dialog or session scope
+)
+
+# Check permissions
+can_record = vcon.check_lawful_basis_permission("recording", party_index=0)
+can_analyze = vcon.check_lawful_basis_permission("analysis", party_index=0)
+
+# Find lawful basis attachments
+attachments = vcon.find_lawful_basis_attachments(party_index=0)
+```
+
+### WTF Extension (Transcription Support)
+```python
+# Add standardized transcription
+vcon.add_wtf_transcription_attachment(
+    transcript={
+        "text": "Hello, this is a test transcription.",
+        "language": "en",
+        "duration": 3.5,
+        "confidence": 0.95
+    },
+    segments=[
+        {
+            "id": 0,
+            "start": 0.0,
+            "end": 1.5,
+            "text": "Hello, this is",
+            "confidence": 0.95,
+            "speaker": 0
+        },
+        {
+            "id": 1,
+            "start": 1.5,
+            "end": 3.5,
+            "text": "a test transcription.",
+            "confidence": 0.94,
+            "speaker": 0
+        }
+    ],
+    metadata={
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "processed_at": datetime.now(timezone.utc).isoformat(),
+        "provider": "whisper",
+        "model": "whisper-1"
+    },
+    party_index=0,
+    dialog_index=0
+)
+
+# Export to subtitle formats
+attachments = vcon.find_wtf_attachments(party_index=0)
+if attachments:
+    from vcon.extensions.wtf import WTFAttachment
+    wtf_attachment = WTFAttachment.from_dict(attachments[0]["body"])
+    
+    # Export to SRT format
+    srt_content = wtf_attachment.export_to_srt()
+    
+    # Export to WebVTT format
+    vtt_content = wtf_attachment.export_to_vtt()
+```
+
+### Provider Data Conversion
+```python
+from vcon.extensions.wtf import WhisperAdapter, DeepgramAdapter
+
+# Convert Whisper data to WTF format
+whisper_data = {
+    "text": "Hello world from Whisper",
+    "segments": [
+        {
+            "start": 0.0,
+            "end": 2.0,
+            "text": "Hello world from Whisper"
+        }
+    ]
+}
+
+whisper_adapter = WhisperAdapter()
+wtf_attachment = whisper_adapter.convert(whisper_data)
+
+# Add to vCon
+vcon.add_wtf_transcription_attachment(
+    transcript=wtf_attachment.transcript.to_dict(),
+    segments=[segment.to_dict() for segment in wtf_attachment.segments],
+    metadata=wtf_attachment.metadata.to_dict(),
+    party_index=0,
+    session_index=0
+)
+```
+
+## Installation
+
+```bash
+pip install vcon
+```
+
+## Basic Usage
+
+### Creating a vCon
+
+```python
+from vcon import Vcon
+from vcon.party import Party
+from vcon.dialog import Dialog
+from vcon.session import Session
+from datetime import datetime
+
+# Create a new vCon
+vcon = Vcon.build_new()
+
+# Add parties
+alice = Party(tel="+1234567890", name="Alice", role="caller")
+bob = Party(tel="+1987654321", name="Bob", role="agent")
+
+vcon.add_party(alice)
+vcon.add_party(bob)
+
+# A Session lists the receivers; Dialog parties are the contributors
+vcon.add_session(Session(start=datetime.now(), parties=[0, 1]))
+
+# Add dialog
+dialog = Dialog(
+    type="text",
+    start=datetime.now(),
+    parties=[0],
+    body="Hello, this is a test message!",
+    encoding="none",
+    mediatype="text/plain",
+)
+
+vcon.add_dialog(dialog, session=0)
+
+# Save to file
+vcon.save_to_file("conversation.vcon.json")
+```
+
+### Loading a vCon
+
+```python
+# Load from file
+vcon = Vcon.load("conversation.vcon.json")
+
+# Load from URL
+vcon = Vcon.load("https://example.com/conversation.vcon.json")
+```
+
+### Validation
+
+```python
+# Validate a vCon
+is_valid, errors = vcon.is_valid()
+
+if is_valid:
+    print("vCon is valid")
+else:
+    print("Validation errors:", errors)
+
+# Validate from file
+is_valid, errors = Vcon.validate_file("conversation.vcon.json")
+```
+
+## Media Support
+
+### Audio and Video
+
+Core-05 has three Dialog types: `recording`, `text` and `incomplete`. Audio and video are both `recording` Dialogs, told apart by `mediatype`. `Dialog(type="audio")` and `Dialog(type="video")` still work, but they warn and build a `recording`.
+
+```python
+# Add audio recording
+audio_dialog = Dialog(
+    type="recording",
+    start=datetime.now(),
+    parties=[0, 1],
+    url="https://example.com/recording.wav",
+    mediatype="audio/x-wav"
+)
+
+# Add video with metadata
+video_dialog = Dialog(
+    type="recording",
+    start=datetime.now(),
+    parties=[0, 1],
+    url="https://example.com/video.mp4",
+    mediatype="video/mp4",
+    resolution="1920x1080",
+    frame_rate=30.0,
+    codec="H.264"
+)
+```
+
+### Supported Media Types
+
+**Audio**: `audio/x-wav`, `audio/x-mp3`, `audio/x-mp4`, `audio/ogg`
+**Video**: `video/x-mp4`, `video/ogg`
+**Text**: `text/plain`
+**Multipart**: `multipart/mixed`
+
+## Security Features
+
+### Digital Signatures
+
+```python
+from cryptography.hazmat.primitives import serialization
+
+# Generate key pair
+private_key, public_key = Vcon.generate_key_pair()
+
+# Sign the vCon (RS256 by default; alg "none" raises AlgorithmNotPermittedError)
+vcon.sign(private_key)
+
+# Verify signature
+is_valid = vcon.verify(public_key)
+```
+
+### Content Hashing
+
+```python
+# Hash the dialog's content: "sha512-<unpadded base64url>" by default
+content_hash = dialog.calculate_content_hash()
+
+# Verify content integrity against a stored hash
+is_valid = dialog.verify_content_hash(content_hash)
+```
+
+## Advanced Features
+
+### Property Handling
+
+```python
+# Strict mode - only allow standard properties
+vcon = Vcon.load("file.json", property_handling="strict")
+
+# Meta mode - move non-standard properties to meta object
+vcon = Vcon.load("file.json", property_handling="meta")
+
+# Default mode - keep all properties
+vcon = Vcon.load("file.json", property_handling="default")
+```
+
+### Call Transfers
+
+The `transfer` dialog type was removed in 0.5.0. A transfer is one or two Events
+(`consultation-start`, `blind-transfer`, `consultative-transfer`,
+`transfer-abandoned`) that reference Sessions for the original, consultation and
+target calls. See "Events" above.
+
+### Empty Dialog Objects
+
+```python
+# Holds a position in the dialog array so no other index moves
+vcon.add_dialog(Dialog.placeholder())   # serializes as {}
+```
+
+### Analysis Data
+
+```python
+# Add analysis
+vcon.add_analysis(
+    type="sentiment",
+    dialog=0,
+    vendor="example-vendor",
+    body={"sentiment": "positive", "confidence": 0.95},
+    encoding="json"
+)
+```
+
+## Specification Compliance
+
+This library implements the latest vCon specification with:
+
+- ✅ All required fields and validation
+- ✅ Proper media type support
+- ✅ Civic address (GEOPRIV) compliance
+- ✅ Sessions and Events, with the per-event-type parameter table enforced
+- ✅ Migration from 0.4.0 (`migrate_0_4_0_to_0_5_0`)
+- ✅ `extensions` completeness and `alg: "none"` rejection
+- ✅ Content hashing and security
+- ✅ Extensions and critical
+- ✅ Writes `"vcon": "0.5.0"`; reads 0.4.0 and 0.5.0
+- ✅ Backward compatibility
+- ✅ **Lawful Basis Extension** - GDPR-compliant privacy management
+- ✅ **WTF Extension** - World Transcription Format for standardized speech-to-text
+- ✅ **Extension Framework** - Comprehensive validation and processing
+- ✅ **Multi-Provider Support** - Whisper, Deepgram, AssemblyAI, and more
+- ✅ **Export Capabilities** - SRT and WebVTT subtitle formats
+
+## Testing
+
+Run the test suite:
+
+```bash
+pytest tests/
+```
+
+All tests pass, covering:
+- Basic functionality
+- Enhanced vCon features
+- Validation and error handling
+- Media type support
 - Security features
+- Flexible versioning
 - Backward compatibility
+- **Extension Framework** - Lawful Basis and WTF extensions
+- **Privacy Compliance** - GDPR-compliant consent management
+- **Transcription Support** - Multi-provider transcription handling
+- **Provider Adapters** - Data conversion and validation
+- **Export Functionality** - SRT and WebVTT export testing
 
-## Related Projects
+## Extension Framework
 
-- [vcon-server](https://github.com/vcon-dev/vcon-server) - vCon processing server
-- [vcon-js](https://github.com/vcon-dev/vcon-js) - TypeScript/JavaScript library
-- [pydantic-vcon](https://github.com/vcon-dev/pydantic-vcon) - Pydantic models for validation
+The vCon library includes a comprehensive extension framework that allows for standardized implementation of additional functionality:
+
+### Available Extensions
+
+- **Lawful Basis Extension** - GDPR-compliant privacy management and consent tracking
+- **WTF Extension** - World Transcription Format for standardized speech-to-text data
+
+### Extension Features
+
+- **Validation Framework** - Comprehensive validation for all extension data
+- **Processing Framework** - Standardized processing and analysis
+- **Provider Adapters** - Automatic conversion from provider-specific formats
+- **Export Capabilities** - Multiple export formats (SRT, WebVTT)
+- **Permission Management** - Granular permission checking and validation
+
+### Extension Usage
+
+```python
+# Validate all extensions
+validation_results = vcon.validate_extensions()
+
+# Process all extensions
+processing_results = vcon.process_extensions()
+
+# Check specific permissions
+can_record = vcon.check_lawful_basis_permission("recording", party_index=0)
+
+# Export transcriptions
+attachments = vcon.find_wtf_attachments(party_index=0)
+```
+
+## Documentation
+
+- **[conserver.io: vCon Library](https://www.conserver.io/vcon-library)** - Quickstart and API reference
+- **[API docs](https://vcon-dev.github.io/vcon-lib/)** - Generated from the source
+- **[API Reference](https://github.com/vcon-dev/vcon-lib/blob/main/API_REFERENCE.md)** - Complete API documentation
+- **[User Guide](https://github.com/vcon-dev/vcon-lib/blob/main/GUIDE.md)** - Comprehensive usage guide
+- **[LLM Guide](https://github.com/vcon-dev/vcon-lib/blob/main/LLM_GUIDE.md)** - Guide for AI-assisted development
+- **[Migration Guide](https://github.com/vcon-dev/vcon-lib/blob/main/MIGRATION_GUIDE.md)** - Upgrading from 0.10 and earlier
+- **[Changelog](https://github.com/vcon-dev/vcon-lib/blob/main/CHANGELOG.md)** - Release notes
 
 ## License
 
-MIT License
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/vcon-dev/vcon-lib/blob/main/LICENSE.txt) file for details.
